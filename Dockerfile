@@ -3,12 +3,9 @@ FROM ubuntu:14.04
 RUN groupadd --gid 1000 user && \
     useradd --shell /bin/bash --home-dir /home/user --uid 1000 --gid 1000 --create-home user
 
-RUN sed -i 's/^deb \(.*\)$/deb \1\ndeb-src \1\n/' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y wget nano build-essential devscripts gcc g++ xserver-xorg-core fontconfig libgl1-mesa-dev fuse libxrender1 libxkbcommon-x11-0 libegl1-mesa && \
-    apt-get build-dep -y dbus libpng freetype && \
-    apt-get install -y cmake && \
-    apt-get install -y libxkbcommon-dev libgtk-3-dev libfontconfig1-dev libfreetype6-dev libdbus-1-dev libcups2-dev libpulse-dev libasound2-dev libgtk2.0-dev libxkbcommon-x11-dev && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget build-essential fakeroot debhelper libgl1-mesa-dev libx11-xcb-dev && \
+    apt-get install -y --no-install-recommends libxkbcommon-dev libgtk-3-dev libfontconfig1-dev libfreetype6-dev libdbus-1-dev libcups2-dev libpulse-dev libasound2-dev libgtk2.0-dev libxkbcommon-x11-dev && \
     apt-get clean
 
 WORKDIR /usr/src
@@ -19,17 +16,17 @@ RUN wget https://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-linux-gnu-ubunt
     rm -rf clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 
 ENV PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/lib:/opt/qt-5.15.0_clang/lib"
+ENV LD_LIBRARY_PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/lib:/opt/qt-5.15.2_clang/lib"
 
-RUN wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz && \
-    tar -xvpf openssl-1.1.1d.tar.gz && \
-    cd openssl-1.1.1d && \
-    setarch x86_64 ./Configure linux-x86_64 -m64 --prefix=/opt/qt-5.15.0_clang --openssldir=/etc/ssl zlib no-shared && \
+RUN wget https://www.openssl.org/source/openssl-1.1.1i.tar.gz && \
+    tar -xvpf openssl-1.1.1i.tar.gz && \
+    cd openssl-1.1.1i && \
+    setarch x86_64 ./Configure linux-x86_64 -m64 --prefix=/opt/qt-5.15.2_clang --openssldir=/etc/ssl zlib no-shared && \
     make depend && \
-    make && \
+    make -j8 && \
     make install && \
     cd .. && \
-    rm -rf openssl-1.1.1d.tar.gz openssl-1.1.1d
+    rm -rf openssl-1.1.1i.tar.gz openssl-1.1.1i
 
 RUN wget https://download.qt.io/archive/qt/5.14/5.14.2/submodules/qtbase-everywhere-src-5.14.2.tar.xz && \
     tar -xvpf qtbase-everywhere-src-5.14.2.tar.xz && \
@@ -68,14 +65,14 @@ RUN wget https://download.qt.io/archive/qt/5.14/5.14.2/submodules/qtbase-everywh
     rm -rf qtbase-everywhere-src-5.14.2.tar.xz qtbase-everywhere-src-5.14.2
 
 RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old-compose-input-context_v5.15.0.diff -O qtbase_old-compose-input-context_v5.15.0.patch && \
-    wget https://download.qt.io/archive/qt/5.15/5.15.0/single/qt-everywhere-src-5.15.0.tar.xz && \
-    tar -xvpf qt-everywhere-src-5.15.0.tar.xz && \
-    cd qt-everywhere-src-5.15.0/qtbase && \
+    wget https://download.qt.io/archive/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz && \
+    tar -xvpf qt-everywhere-src-5.15.2.tar.xz && \
+    cd qt-everywhere-src-5.15.2/qtbase && \
     patch -p1 -i ../../qtbase_old-compose-input-context_v5.15.0.patch && \
     cd .. && \
     mkdir build && \
     cd build && \
-    ../configure -prefix /opt/qt-5.15.0_clang -platform linux-clang-libc++ -opensource -confirm-license -release -strip -c++std c++2a -linker lld \
+    ../configure -prefix /opt/qt-5.15.2_clang -platform linux-clang-libc++ -opensource -confirm-license -release -strip -c++std c++2a -linker lld \
         -gui -widgets -dbus-linked -accessibility \
         -qt-doubleconversion -glib -no-icu -qt-pcre -system-zlib \
         -ssl -openssl-linked -no-libproxy -system-proxies \
@@ -94,7 +91,7 @@ RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old
         -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtvirtualkeyboard \
         -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets \
         -skip qtwebview -skip qtwinextras -skip qtxmlpatterns -no-feature-qdoc \
-        OPENSSL_PREFIX=/opt/qt-5.15.0_clang OPENSSL_LIBS='-lssl -lcrypto -lz -ldl -pthread' \
+        OPENSSL_PREFIX=/opt/qt-5.15.2_clang OPENSSL_LIBS='-lssl -lcrypto -lz -ldl -pthread' \
         XCB_ICCCM_PREFIX=/opt/xcb XCB_ICCCM_LIBS='/opt/xcb/lib/libxcb-icccm.a' \
         XCB_IMAGE_PREFIX=/opt/xcb XCB_IMAGE_LIBS='/opt/xcb/lib/libxcb-image.a' \
         XCB_KEYSYMS_PREFIX=/opt/xcb XCB_KEYSYMS_LIBS='/opt/xcb/lib/libxcb-keysyms.a' \
@@ -104,6 +101,7 @@ RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old
         XCB_SHAPE_PREFIX=/opt/xcb XCB_SHAPE_LIBS='/opt/xcb/lib/libxcb-shape.a' \
         XCB_SHM_PREFIX=/opt/xcb XCB_SHM_LIBS='/opt/xcb/lib/libxcb-shm.a' \
         XCB_SYNC_PREFIX=/opt/xcb XCB_SYNC_LIBS='/opt/xcb/lib/libxcb-sync.a' \
+        XCB_UTIL_PREFIX=/opt/xcb XCB_UTIL_LIBS='/opt/xcb/lib/libxcb-util.a' \
         XCB_XFIXES_PREFIX=/opt/xcb XCB_XFIXES_LIBS='/opt/xcb/lib/libxcb-xfixes.a' \
         XCB_XINERAMA_PREFIX=/opt/xcb XCB_XINERAMA_LIBS='/opt/xcb/lib/libxcb-xinerama.a' \
         XCB_XINPUT_PREFIX=/opt/xcb XCB_XINPUT_LIBS='/opt/xcb/lib/libxcb-xinput.a' \
@@ -114,10 +112,10 @@ RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old
         QMAKE_LINK_C_SHLIB=/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang \
         QMAKE_LINK=/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++ \
         QMAKE_LINK_SHLIB=/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++ && \
-    make && \
+    make -j8 && \
     make install && \
     cd ../.. && \
-    rm -rf qtbase_old-compose-input-context_v5.15.0.patch qt-everywhere-src-5.15.0.tar.xz qt-everywhere-src-5.15.0
+    rm -rf qtbase_old-compose-input-context_v5.15.0.patch qt-everywhere-src-5.15.2.tar.xz qt-everywhere-src-5.15.2
 
 RUN wget https://gist.githubusercontent.com/AlienCowEatCake/44f259b25590a6ac7e40630b4779fb0a/raw/fix-build-qt5.15.patch && \
     wget https://github.com/qt/qtstyleplugins/archive/master.tar.gz -O qtstyleplugins-master.tar.gz && \
@@ -126,22 +124,22 @@ RUN wget https://gist.githubusercontent.com/AlienCowEatCake/44f259b25590a6ac7e40
     patch -p1 -i ../fix-build-qt5.15.patch && \
     mkdir build && \
     cd build && \
-    /opt/qt-5.15.0_clang/bin/qmake -r ../qtstyleplugins.pro && \
-    make && \
+    /opt/qt-5.15.2_clang/bin/qmake -r ../qtstyleplugins.pro && \
+    make -j8 && \
     make install && \
     cd ../.. && \
     rm -rf fix-build-qt5.15.patch qtstyleplugins-master.tar.gz qtstyleplugins-master
 
-RUN wget https://downloads.sourceforge.net/project/qt5ct/qt5ct-1.0.tar.bz2 && \
-    tar -xvpf qt5ct-1.0.tar.bz2 && \
-    cd qt5ct-1.0 && \
+RUN wget https://downloads.sourceforge.net/project/qt5ct/qt5ct-1.1.tar.bz2 && \
+    tar -xvpf qt5ct-1.1.tar.bz2 && \
+    cd qt5ct-1.1 && \
     mkdir build && \
     cd build && \
-    /opt/qt-5.15.0_clang/bin/qmake -r ../qt5ct.pro && \
-    make && \
+    /opt/qt-5.15.2_clang/bin/qmake -r ../qt5ct.pro && \
+    make -j8 && \
     make install && \
     cd ../.. && \
-    rm -rf qt5ct-1.0.tar.bz2 qt5ct-1.0
+    rm -rf qt5ct-1.1.tar.bz2 qt5ct-1.1
 
 RUN wget https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage -O appimagetool-x86_64.AppImage && \
     chmod +x appimagetool-x86_64.AppImage && \
@@ -153,12 +151,12 @@ RUN wget https://github.com/AppImage/AppImageKit/releases/download/12/appimageto
     find /opt/appimagetool-x86_64.AppDir -executable -type f -exec chmod +x \{\} \; && \
     ln -s /opt/appimagetool-x86_64.AppDir/AppRun /opt/appimagetool-x86_64.AppImage
 
-RUN wget https://github.com/probonopd/linuxdeployqt/releases/download/6/linuxdeployqt-6-x86_64.AppImage -O linuxdeployqt-6-x86_64.AppImage && \
-    chmod +x linuxdeployqt-6-x86_64.AppImage && \
-    ./linuxdeployqt-6-x86_64.AppImage --appimage-extract && \
-    rm linuxdeployqt-6-x86_64.AppImage && \
-    mv squashfs-root /opt/linuxdeployqt-6-x86_64.AppDir && \
-    find /opt/linuxdeployqt-6-x86_64.AppDir -type d -exec chmod 755 \{\} \; && \
-    find /opt/linuxdeployqt-6-x86_64.AppDir -type f -exec chmod +r \{\} \; && \
-    find /opt/linuxdeployqt-6-x86_64.AppDir -executable -type f -exec chmod +x \{\} \; && \
-    ln -s /opt/linuxdeployqt-6-x86_64.AppDir/AppRun /opt/linuxdeployqt-6-x86_64.AppImage
+RUN wget https://github.com/probonopd/linuxdeployqt/releases/download/7/linuxdeployqt-7-x86_64.AppImage -O linuxdeployqt-7-x86_64.AppImage && \
+    chmod +x linuxdeployqt-7-x86_64.AppImage && \
+    ./linuxdeployqt-7-x86_64.AppImage --appimage-extract && \
+    rm linuxdeployqt-7-x86_64.AppImage && \
+    mv squashfs-root /opt/linuxdeployqt-7-x86_64.AppDir && \
+    find /opt/linuxdeployqt-7-x86_64.AppDir -type d -exec chmod 755 \{\} \; && \
+    find /opt/linuxdeployqt-7-x86_64.AppDir -type f -exec chmod +r \{\} \; && \
+    find /opt/linuxdeployqt-7-x86_64.AppDir -executable -type f -exec chmod +x \{\} \; && \
+    ln -s /opt/linuxdeployqt-7-x86_64.AppDir/AppRun /opt/linuxdeployqt-7-x86_64.AppImage
