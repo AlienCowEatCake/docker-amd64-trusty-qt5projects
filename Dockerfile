@@ -10,7 +10,7 @@ RUN apt-get update && \
 
 WORKDIR /usr/src
 
-RUN wget https://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz && \
+RUN wget --no-check-certificate https://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz && \
     tar -xvpf clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz && \
     mv clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04 /opt/ && \
     rm -rf clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -18,17 +18,17 @@ RUN wget https://releases.llvm.org/9.0.0/clang+llvm-9.0.0-x86_64-linux-gnu-ubunt
 ENV PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/lib:/opt/qt-5.15.2_clang/lib"
 
-RUN wget https://www.openssl.org/source/openssl-1.1.1i.tar.gz && \
-    tar -xvpf openssl-1.1.1i.tar.gz && \
-    cd openssl-1.1.1i && \
+RUN wget --no-check-certificate https://www.openssl.org/source/openssl-1.1.1l.tar.gz && \
+    tar -xvpf openssl-1.1.1l.tar.gz && \
+    cd openssl-1.1.1l && \
     setarch x86_64 ./Configure linux-x86_64 -m64 --prefix=/opt/qt-5.15.2_clang --openssldir=/etc/ssl zlib no-shared && \
     make depend && \
     make -j8 && \
     make install && \
     cd .. && \
-    rm -rf openssl-1.1.1i.tar.gz openssl-1.1.1i
+    rm -rf openssl-1.1.1l.tar.gz openssl-1.1.1l
 
-RUN wget https://download.qt.io/archive/qt/5.14/5.14.2/submodules/qtbase-everywhere-src-5.14.2.tar.xz && \
+RUN wget --no-check-certificate https://download.qt.io/archive/qt/5.14/5.14.2/submodules/qtbase-everywhere-src-5.14.2.tar.xz && \
     tar -xvpf qtbase-everywhere-src-5.14.2.tar.xz && \
     cd qtbase-everywhere-src-5.14.2/src/3rdparty/xcb && \
     mkdir -p /opt/xcb/lib && \
@@ -64,10 +64,10 @@ RUN wget https://download.qt.io/archive/qt/5.14/5.14.2/submodules/qtbase-everywh
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     rm -rf qtbase-everywhere-src-5.14.2.tar.xz qtbase-everywhere-src-5.14.2
 
-RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old-compose-input-context_v5.15.0.diff -O qtbase_old-compose-input-context_v5.15.0.patch && \
-    wget https://download.qt.io/archive/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz && \
-    tar -xvpf qt-everywhere-src-5.15.2.tar.xz && \
-    cd qt-everywhere-src-5.15.2/qtbase && \
+RUN wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old-compose-input-context_v5.15.0.diff -O qtbase_old-compose-input-context_v5.15.0.patch && \
+    wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/releases/download/v5.15.2_osx-10.10_v3/qt-everywhere-src-5.15.x-2021.01.04.tar.xz -O qt-everywhere-src-5.15.x-2021.01.04.tar.xz && \
+    tar -xvpf qt-everywhere-src-5.15.x-2021.01.04.tar.xz && \
+    cd qt-everywhere-src-5.15.x-2021.01.04/qtbase && \
     patch -p1 -i ../../qtbase_old-compose-input-context_v5.15.0.patch && \
     cd .. && \
     mkdir build && \
@@ -93,7 +93,7 @@ RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old
         -skip qtwebview -skip qtwinextras -skip qtxmlpatterns -no-feature-qdoc \
         OPENSSL_PREFIX=/opt/qt-5.15.2_clang OPENSSL_LIBS='-lssl -lcrypto -lz -ldl -pthread' \
         XCB_ICCCM_PREFIX=/opt/xcb XCB_ICCCM_LIBS='/opt/xcb/lib/libxcb-icccm.a' \
-        XCB_IMAGE_PREFIX=/opt/xcb XCB_IMAGE_LIBS='/opt/xcb/lib/libxcb-image.a' \
+        XCB_IMAGE_PREFIX=/opt/xcb XCB_IMAGE_LIBS='/opt/xcb/lib/libxcb-image.a /opt/xcb/lib/libxcb-util.a' \
         XCB_KEYSYMS_PREFIX=/opt/xcb XCB_KEYSYMS_LIBS='/opt/xcb/lib/libxcb-keysyms.a' \
         XCB_RANDR_PREFIX=/opt/xcb XCB_RANDR_LIBS='/opt/xcb/lib/libxcb-randr.a' \
         XCB_RENDER_PREFIX=/opt/xcb XCB_RENDER_LIBS='/opt/xcb/lib/libxcb-render.a' \
@@ -101,7 +101,6 @@ RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old
         XCB_SHAPE_PREFIX=/opt/xcb XCB_SHAPE_LIBS='/opt/xcb/lib/libxcb-shape.a' \
         XCB_SHM_PREFIX=/opt/xcb XCB_SHM_LIBS='/opt/xcb/lib/libxcb-shm.a' \
         XCB_SYNC_PREFIX=/opt/xcb XCB_SYNC_LIBS='/opt/xcb/lib/libxcb-sync.a' \
-        XCB_UTIL_PREFIX=/opt/xcb XCB_UTIL_LIBS='/opt/xcb/lib/libxcb-util.a' \
         XCB_XFIXES_PREFIX=/opt/xcb XCB_XFIXES_LIBS='/opt/xcb/lib/libxcb-xfixes.a' \
         XCB_XINERAMA_PREFIX=/opt/xcb XCB_XINERAMA_LIBS='/opt/xcb/lib/libxcb-xinerama.a' \
         XCB_XINPUT_PREFIX=/opt/xcb XCB_XINPUT_LIBS='/opt/xcb/lib/libxcb-xinput.a' \
@@ -115,10 +114,10 @@ RUN wget https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old
     make -j8 && \
     make install && \
     cd ../.. && \
-    rm -rf qtbase_old-compose-input-context_v5.15.0.patch qt-everywhere-src-5.15.2.tar.xz qt-everywhere-src-5.15.2
+    rm -rf qtbase_old-compose-input-context_v5.15.0.patch qt-everywhere-src-5.15.x-2021.01.04.tar.xz qt-everywhere-src-5.15.x-2021.01.04
 
-RUN wget https://gist.githubusercontent.com/AlienCowEatCake/44f259b25590a6ac7e40630b4779fb0a/raw/fix-build-qt5.15.patch && \
-    wget https://github.com/qt/qtstyleplugins/archive/master.tar.gz -O qtstyleplugins-master.tar.gz && \
+RUN wget --no-check-certificate https://gist.githubusercontent.com/AlienCowEatCake/44f259b25590a6ac7e40630b4779fb0a/raw/fix-build-qt5.15.patch && \
+    wget --no-check-certificate https://github.com/qt/qtstyleplugins/archive/master.tar.gz -O qtstyleplugins-master.tar.gz && \
     tar -xvpf qtstyleplugins-master.tar.gz && \
     cd qtstyleplugins-master && \
     patch -p1 -i ../fix-build-qt5.15.patch && \
@@ -130,18 +129,18 @@ RUN wget https://gist.githubusercontent.com/AlienCowEatCake/44f259b25590a6ac7e40
     cd ../.. && \
     rm -rf fix-build-qt5.15.patch qtstyleplugins-master.tar.gz qtstyleplugins-master
 
-RUN wget https://downloads.sourceforge.net/project/qt5ct/qt5ct-1.1.tar.bz2 && \
-    tar -xvpf qt5ct-1.1.tar.bz2 && \
-    cd qt5ct-1.1 && \
+RUN wget --no-check-certificate https://downloads.sourceforge.net/project/qt5ct/qt5ct-1.5.tar.bz2 && \
+    tar -xvpf qt5ct-1.5.tar.bz2 && \
+    cd qt5ct-1.5 && \
     mkdir build && \
     cd build && \
     /opt/qt-5.15.2_clang/bin/qmake -r ../qt5ct.pro && \
     make -j8 && \
     make install && \
     cd ../.. && \
-    rm -rf qt5ct-1.1.tar.bz2 qt5ct-1.1
+    rm -rf qt5ct-1.5.tar.bz2 qt5ct-1.5
 
-RUN wget https://github.com/AppImage/AppImageKit/releases/download/12/appimagetool-x86_64.AppImage -O appimagetool-x86_64.AppImage && \
+RUN wget --no-check-certificate https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage -O appimagetool-x86_64.AppImage && \
     chmod +x appimagetool-x86_64.AppImage && \
     ./appimagetool-x86_64.AppImage --appimage-extract && \
     rm appimagetool-x86_64.AppImage && \
@@ -151,7 +150,7 @@ RUN wget https://github.com/AppImage/AppImageKit/releases/download/12/appimageto
     find /opt/appimagetool-x86_64.AppDir -executable -type f -exec chmod +x \{\} \; && \
     ln -s /opt/appimagetool-x86_64.AppDir/AppRun /opt/appimagetool-x86_64.AppImage
 
-RUN wget https://github.com/probonopd/linuxdeployqt/releases/download/7/linuxdeployqt-7-x86_64.AppImage -O linuxdeployqt-7-x86_64.AppImage && \
+RUN wget --no-check-certificate https://github.com/probonopd/linuxdeployqt/releases/download/7/linuxdeployqt-7-x86_64.AppImage -O linuxdeployqt-7-x86_64.AppImage && \
     chmod +x linuxdeployqt-7-x86_64.AppImage && \
     ./linuxdeployqt-7-x86_64.AppImage --appimage-extract && \
     rm linuxdeployqt-7-x86_64.AppImage && \
