@@ -17,17 +17,17 @@ RUN wget --no-check-certificate https://releases.llvm.org/9.0.0/clang+llvm-9.0.0
     rm -rf clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 
 ENV PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/lib:/opt/qt-5.15.4_clang/lib"
+ENV LD_LIBRARY_PATH="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/lib:/opt/qt-5.15.5_clang/lib"
 
-RUN wget --no-check-certificate https://www.openssl.org/source/openssl-1.1.1o.tar.gz && \
-    tar -xvpf openssl-1.1.1o.tar.gz && \
-    cd openssl-1.1.1o && \
-    setarch x86_64 ./Configure linux-x86_64 -m64 --prefix=/opt/qt-5.15.4_clang --openssldir=/etc/ssl zlib no-shared && \
+RUN wget --no-check-certificate https://www.openssl.org/source/openssl-1.1.1q.tar.gz && \
+    tar -xvpf openssl-1.1.1q.tar.gz && \
+    cd openssl-1.1.1q && \
+    setarch x86_64 ./Configure linux-x86_64 -m64 --prefix=/opt/qt-5.15.5_clang --openssldir=/etc/ssl zlib no-shared && \
     make depend && \
     make -j8 && \
     make install && \
     cd .. && \
-    rm -rf openssl-1.1.1o.tar.gz openssl-1.1.1o
+    rm -rf openssl-1.1.1q.tar.gz openssl-1.1.1q
 
 RUN wget --no-check-certificate https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-src.tgz && \
     tar -xvpf icu4c-67_1-src.tgz && \
@@ -45,9 +45,9 @@ RUN wget --no-check-certificate https://github.com/unicode-org/icu/releases/down
     cd ../.. && \
     rm -rf icu icu4c-67_1-src.tgz
 
-RUN wget --no-check-certificate http://xmlsoft.org/sources/libxml2-2.9.12.tar.gz && \
-    tar -xvpf libxml2-2.9.12.tar.gz && \
-    cd libxml2-2.9.12 && \
+RUN wget --no-check-certificate https://download.gnome.org/sources/libxml2/2.9/libxml2-2.9.14.tar.xz && \
+    tar -xvpf libxml2-2.9.14.tar.xz && \
+    cd libxml2-2.9.14 && \
     PKG_CONFIG_PATH="/opt/icu/lib/pkgconfig" \
     CC="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang" \
     CXX="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++" \
@@ -59,11 +59,11 @@ RUN wget --no-check-certificate http://xmlsoft.org/sources/libxml2-2.9.12.tar.gz
     make -j8 && \
     make install && \
     cd .. && \
-    rm -rf libxml2-2.9.12 libxml2-2.9.12.tar.gz
+    rm -rf libxml2-2.9.14 libxml2-2.9.14.tar.xz
 
-RUN wget --no-check-certificate http://xmlsoft.org/sources/libxslt-1.1.34.tar.gz && \
-    tar -xvpf libxslt-1.1.34.tar.gz && \
-    cd libxslt-1.1.34 && \
+RUN wget --no-check-certificate https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.35.tar.xz && \
+    tar -xvpf libxslt-1.1.35.tar.xz && \
+    cd libxslt-1.1.35 && \
     PKG_CONFIG_PATH="/opt/icu/lib/pkgconfig:/opt/libxml2/lib/pkgconfig" \
     CC="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang" \
     CXX="/opt/clang+llvm-9.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++" \
@@ -75,18 +75,18 @@ RUN wget --no-check-certificate http://xmlsoft.org/sources/libxslt-1.1.34.tar.gz
     make -j8 && \
     make install && \
     cd .. && \
-    rm -rf libxslt-1.1.34.tar.gz libxslt-1.1.34
+    rm -rf libxslt-1.1.35.tar.xz libxslt-1.1.35
 
-RUN wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-x86_64.tar.gz && \
-    tar -xvpf cmake-3.23.1-linux-x86_64.tar.gz && \
-    mv cmake-3.23.1-linux-x86_64 /opt/ && \
-    ln -s /opt/cmake-3.23.1-linux-x86_64/bin/cmake /usr/local/bin/ && \
-    ln -s /opt/cmake-3.23.1-linux-x86_64/bin/ctest /usr/local/bin/ && \
-    ln -s /opt/cmake-3.23.1-linux-x86_64/bin/ccmake /usr/local/bin/ && \
-    ln -s /opt/cmake-3.23.1-linux-x86_64/bin/cpack /usr/local/bin/ && \
-    rm -rf cmake-3.23.1-linux-x86_64.tar.gz
+RUN wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-linux-x86_64.tar.gz && \
+    tar -xvpf cmake-3.24.0-linux-x86_64.tar.gz && \
+    mv cmake-3.24.0-linux-x86_64 /opt/ && \
+    ln -s /opt/cmake-3.24.0-linux-x86_64/bin/cmake /usr/local/bin/ && \
+    ln -s /opt/cmake-3.24.0-linux-x86_64/bin/ctest /usr/local/bin/ && \
+    ln -s /opt/cmake-3.24.0-linux-x86_64/bin/ccmake /usr/local/bin/ && \
+    ln -s /opt/cmake-3.24.0-linux-x86_64/bin/cpack /usr/local/bin/ && \
+    rm -rf cmake-3.24.0-linux-x86_64.tar.gz
 
-RUN wget --no-check-certificate https://download.qt.io/archive/qt/5.14/5.14.2/submodules/qtbase-everywhere-src-5.14.2.tar.xz && \
+RUN wget --no-check-certificate https://mirror.yandex.ru/mirrors/qt.io/archive/qt/5.14/5.14.2/submodules/qtbase-everywhere-src-5.14.2.tar.xz && \
     tar -xvpf qtbase-everywhere-src-5.14.2.tar.xz && \
     cd qtbase-everywhere-src-5.14.2/src/3rdparty/xcb && \
     mkdir -p /opt/xcb/lib && \
@@ -123,15 +123,15 @@ RUN wget --no-check-certificate https://download.qt.io/archive/qt/5.14/5.14.2/su
     rm -rf qtbase-everywhere-src-5.14.2.tar.xz qtbase-everywhere-src-5.14.2
 
 RUN wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v5.15.0...feature/old-compose-input-context_v5.15.0.diff -O qtbase_old-compose-input-context_v5.15.0.patch && \
-    wget --no-check-certificate https://download.qt.io/archive/qt/5.15/5.15.4/single/qt-everywhere-opensource-src-5.15.4.tar.xz && \
+    wget --no-check-certificate https://mirror.yandex.ru/mirrors/qt.io/archive/qt/5.15/5.15.5/single/qt-everywhere-opensource-src-5.15.5.tar.xz && \
     wget --no-check-certificate https://github.com/qtwebkit/qtwebkit/releases/download/qtwebkit-5.212.0-alpha4/qtwebkit-5.212.0-alpha4.tar.xz && \
-    tar -xvpf qt-everywhere-opensource-src-5.15.4.tar.xz && \
-    cd qt-everywhere-src-5.15.4/qtbase && \
+    tar -xvpf qt-everywhere-opensource-src-5.15.5.tar.xz && \
+    cd qt-everywhere-src-5.15.5/qtbase && \
     patch -p1 -i ../../qtbase_old-compose-input-context_v5.15.0.patch && \
     cd .. && \
     mkdir build && \
     cd build && \
-    ../configure -prefix /opt/qt-5.15.4_clang -platform linux-clang-libc++ -opensource -confirm-license -release -strip -c++std c++2a -linker lld \
+    ../configure -prefix /opt/qt-5.15.5_clang -platform linux-clang-libc++ -opensource -confirm-license -release -strip -c++std c++2a -linker lld \
         -gui -widgets -dbus-linked -accessibility \
         -qt-doubleconversion -glib -no-icu -qt-pcre -system-zlib \
         -ssl -openssl-linked -no-libproxy -system-proxies \
@@ -150,7 +150,7 @@ RUN wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compar
         -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qtvirtualkeyboard \
         -skip qtwayland -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebsockets \
         -skip qtwebview -skip qtwinextras -skip qtxmlpatterns -no-feature-qdoc \
-        OPENSSL_PREFIX=/opt/qt-5.15.4_clang OPENSSL_LIBS='-lssl -lcrypto -lz -ldl -pthread' \
+        OPENSSL_PREFIX=/opt/qt-5.15.5_clang OPENSSL_LIBS='-lssl -lcrypto -lz -ldl -pthread' \
         XCB_ICCCM_PREFIX=/opt/xcb XCB_ICCCM_LIBS='/opt/xcb/lib/libxcb-icccm.a' \
         XCB_IMAGE_PREFIX=/opt/xcb XCB_IMAGE_LIBS='/opt/xcb/lib/libxcb-image.a /opt/xcb/lib/libxcb-util.a' \
         XCB_KEYSYMS_PREFIX=/opt/xcb XCB_KEYSYMS_LIBS='/opt/xcb/lib/libxcb-keysyms.a' \
@@ -181,7 +181,7 @@ RUN wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compar
     cd build && \
     SQLITE3SRCDIR=${PWD}/../../qtbase/src/3rdparty/sqlite \
     PKG_CONFIG_PATH="/opt/icu/lib/pkgconfig:/opt/libxml2/lib/pkgconfig:/opt/libxslt/lib/pkgconfig" \
-    /opt/qt-5.15.4_clang/bin/qmake -r \
+    /opt/qt-5.15.5_clang/bin/qmake -r \
         CMAKE_CONFIG+=ENABLE_TEST_SUPPORT=OFF \
         CMAKE_CONFIG+=ENABLE_API_TESTS=OFF \
         CMAKE_CONFIG+=USE_GSTREAMER=OFF \
@@ -196,10 +196,10 @@ RUN wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compar
         ../WebKit.pro && \
     make -j8 && \
     make install && \
-    strip --strip-all /opt/qt-5.15.4_clang/lib/libQt5WebKit.so.5.212.0 && \
-    strip --strip-all /opt/qt-5.15.4_clang/lib/libQt5WebKitWidgets.so.5.212.0 && \
+    strip --strip-all /opt/qt-5.15.5_clang/lib/libQt5WebKit.so.5.212.0 && \
+    strip --strip-all /opt/qt-5.15.5_clang/lib/libQt5WebKitWidgets.so.5.212.0 && \
     cd ../../.. && \
-    rm -rf qtbase_old-compose-input-context_v5.15.0.patch qt-everywhere-opensource-src-5.15.4.tar.xz qtwebkit-5.212.0-alpha4.tar.xz qt-everywhere-src-5.15.4
+    rm -rf qtbase_old-compose-input-context_v5.15.0.patch qt-everywhere-opensource-src-5.15.5.tar.xz qtwebkit-5.212.0-alpha4.tar.xz qt-everywhere-src-5.15.5
 
 RUN wget --no-check-certificate https://gist.githubusercontent.com/AlienCowEatCake/44f259b25590a6ac7e40630b4779fb0a/raw/fix-build-qt5.15.patch && \
     wget --no-check-certificate https://github.com/qt/qtstyleplugins/archive/master.tar.gz -O qtstyleplugins-master.tar.gz && \
@@ -208,7 +208,7 @@ RUN wget --no-check-certificate https://gist.githubusercontent.com/AlienCowEatCa
     patch -p1 -i ../fix-build-qt5.15.patch && \
     mkdir build && \
     cd build && \
-    /opt/qt-5.15.4_clang/bin/qmake -r ../qtstyleplugins.pro && \
+    /opt/qt-5.15.5_clang/bin/qmake -r ../qtstyleplugins.pro && \
     make -j8 && \
     make install && \
     cd ../.. && \
@@ -219,7 +219,7 @@ RUN wget --no-check-certificate https://downloads.sourceforge.net/project/qt5ct/
     cd qt5ct-1.5 && \
     mkdir build && \
     cd build && \
-    /opt/qt-5.15.4_clang/bin/qmake -r ../qt5ct.pro && \
+    /opt/qt-5.15.5_clang/bin/qmake -r ../qt5ct.pro && \
     make -j8 && \
     make install && \
     cd ../.. && \
