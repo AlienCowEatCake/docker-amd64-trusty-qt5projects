@@ -173,7 +173,7 @@ RUN export LIBXSLT_VERSION="1.1.37" && \
     rm -rf libxslt-${LIBXSLT_VERSION}.tar.xz libxslt-${LIBXSLT_VERSION}
 
 RUN export QT_XCB_VERSION="5.14.2" && \
-    wget --no-check-certificate https://mirror.yandex.ru/mirrors/qt.io/archive/qt/$(echo ${QT_XCB_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_XCB_VERSION}/submodules/qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz && \
+    wget --no-check-certificate https://download.qt.io/archive/qt/$(echo ${QT_XCB_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_XCB_VERSION}/submodules/qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz && \
     tar -xvpf qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz && \
     cd qtbase-everywhere-src-${QT_XCB_VERSION}/src/3rdparty/xcb && \
     mkdir -p /opt/xcb/lib && \
@@ -209,11 +209,11 @@ RUN export QT_XCB_VERSION="5.14.2" && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     rm -rf qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz qtbase-everywhere-src-${QT_XCB_VERSION}
 
-RUN export QT_VERSION="5.15.7" && \
+RUN export QT_VERSION="5.15.8" && \
     export QT_XKB_COMPOSE_PATCH_VERSION="5.15.6" && \
     export QT_WEBKIT_VERSION="5.212.0-alpha4" && \
     wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v${QT_XKB_COMPOSE_PATCH_VERSION}-lts-lgpl...feature/old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.diff -O qtbase_old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.patch && \
-    wget --no-check-certificate https://mirror.yandex.ru/mirrors/qt.io/archive/qt/$(echo ${QT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
+    wget --no-check-certificate https://download.qt.io/archive/qt/$(echo ${QT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     wget --no-check-certificate https://github.com/qtwebkit/qtwebkit/releases/download/qtwebkit-${QT_WEBKIT_VERSION}/qtwebkit-${QT_WEBKIT_VERSION}.tar.xz && \
     tar -xvpf qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     cd qt-everywhere-src-${QT_VERSION}/qtbase && \
@@ -343,8 +343,10 @@ RUN export APPIMAGEKIT_VERSION="13" && \
 
 RUN export LINUXDEPLOYQT_COMMIT="deebf70ea60b7fd19321e7a0eb884d6d986f7b5c" && \
     wget --no-check-certificate https://github.com/probonopd/linuxdeployqt/archive/${LINUXDEPLOYQT_COMMIT}.tar.gz && \
+    wget --no-check-certificate https://gist.githubusercontent.com/AlienCowEatCake/2e462eeb9542df02249a5da2d1d5c10e/raw/36c45c569bc38ce038e470dd9284d9a7b7ee8f26/2023-01-04_linuxdeployqt_qemu.patch && \
     tar -xvpf ${LINUXDEPLOYQT_COMMIT}.tar.gz && \
     cd linuxdeployqt-${LINUXDEPLOYQT_COMMIT} && \
+    patch -p1 -i ../2023-01-04_linuxdeployqt_qemu.patch && \
     cmake -S . -B build \
         -G "Unix Makefiles" \
         -DCMAKE_BUILD_TYPE=Release \
@@ -360,7 +362,7 @@ RUN export LINUXDEPLOYQT_COMMIT="deebf70ea60b7fd19321e7a0eb884d6d986f7b5c" && \
     strip --strip-all build/tools/linuxdeployqt/linuxdeployqt && \
     cp -a build/tools/linuxdeployqt/linuxdeployqt /usr/local/bin/ && \
     cd .. && \
-    rm -rf ${LINUXDEPLOYQT_COMMIT}.tar.gz linuxdeployqt-${LINUXDEPLOYQT_COMMIT}
+    rm -rf 2023-01-04_linuxdeployqt_qemu.patch ${LINUXDEPLOYQT_COMMIT}.tar.gz linuxdeployqt-${LINUXDEPLOYQT_COMMIT}
 
 RUN export PATCHELF_VERSION="0.17.0" && \
     wget --no-check-certificate https://github.com/NixOS/patchelf/releases/download/${PATCHELF_VERSION}/patchelf-${PATCHELF_VERSION}.tar.bz2 && \
