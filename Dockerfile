@@ -8,9 +8,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
         wget build-essential fakeroot debhelper libgl1-mesa-dev libx11-xcb-dev \
         libxkbcommon-dev libgtk-3-dev libfontconfig1-dev libfreetype6-dev libdbus-1-dev libcups2-dev \
-        libpulse-dev libasound2-dev libgtk2.0-dev libxkbcommon-x11-dev \
+        libpulse-dev libasound2-dev libjack-dev libgtk2.0-dev libxkbcommon-x11-dev \
         gperf bison ruby flex \
-        libssl-dev && \
+        libssl-dev \
+        curl git openssh-client && \
     apt-get clean
 
 WORKDIR /usr/src
@@ -18,7 +19,7 @@ WORKDIR /usr/src
 ENV PATH="/opt/clang/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/clang/lib:/opt/qt5/lib"
 
-RUN export CMAKE_VERSION="3.25.1" && \
+RUN export CMAKE_VERSION="3.26.4" && \
     wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz && \
     tar -xvpf cmake-${CMAKE_VERSION}.tar.gz && \
     cd cmake-${CMAKE_VERSION} && \
@@ -31,7 +32,20 @@ RUN export CMAKE_VERSION="3.25.1" && \
     cd .. && \
     rm -rf cmake-${CMAKE_VERSION}.tar.gz cmake-${CMAKE_VERSION}
 
-RUN export CLANG_VERSION="15.0.6" && \
+RUN export NINJA_VERSION="1.11.1" && \
+    wget --no-check-certificate https://github.com/ninja-build/ninja/archive/refs/tags/v${NINJA_VERSION}.tar.gz && \
+    tar -xvpf v${NINJA_VERSION}.tar.gz && \
+    cd ninja-${NINJA_VERSION} && \
+    cmake -S . -B build \
+        -G "Unix Makefiles" \
+        -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build --target ninja -- -j$(getconf _NPROCESSORS_ONLN) && \
+    strip --strip-all build/ninja && \
+    cp -a build/ninja /usr/local/bin/ && \
+    cd .. && \
+    rm -rf v${NINJA_VERSION}.tar.gz ninja-${NINJA_VERSION}
+
+RUN export CLANG_VERSION="15.0.7" && \
     export CLANG_STAGE1_VERSION="9.0.1" && \
     wget --no-check-certificate https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${CLANG_STAGE1_VERSION}.tar.gz && \
     tar -xvpf llvmorg-${CLANG_STAGE1_VERSION}.tar.gz && \
@@ -75,7 +89,7 @@ RUN export CLANG_VERSION="15.0.6" && \
     tar -xvpf llvmorg-${CLANG_VERSION}.tar.gz && \
     cd llvm-project-llvmorg-${CLANG_VERSION} && \
     cmake -S llvm -B build \
-        -G "Unix Makefiles" \
+        -G "Ninja" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER="$(readlink -f ../llvm-project-llvmorg-${CLANG_STAGE1_VERSION}/build/bin)/clang" \
         -DCMAKE_CXX_COMPILER="$(readlink -f ../llvm-project-llvmorg-${CLANG_STAGE1_VERSION}/build/bin)/clang++" \
@@ -90,10 +104,10 @@ RUN export CLANG_VERSION="15.0.6" && \
         -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF \
         -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
         -DCMAKE_INSTALL_PREFIX="/opt/clang" && \
-    cmake --build build --target all -- -j$(getconf _NPROCESSORS_ONLN) && \
+    cmake --build build --target all && \
     cmake --install build --prefix "/opt/clang" && \
     cmake -S runtimes -B build_runtimes \
-        -G "Unix Makefiles" \
+        -G "Ninja" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER="/opt/clang/bin/clang" \
         -DCMAKE_CXX_COMPILER="/opt/clang/bin/clang++" \
@@ -104,13 +118,13 @@ RUN export CLANG_VERSION="15.0.6" && \
         -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF \
         -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
         -DCMAKE_INSTALL_PREFIX="/opt/clang" && \
-    cmake --build build_runtimes --target cxx cxxabi unwind -- -j$(getconf _NPROCESSORS_ONLN) && \
+    cmake --build build_runtimes --target cxx cxxabi unwind && \
     cmake --build build_runtimes --target install-cxx install-cxxabi install-unwind && \
     cd .. && \
     \
     rm -rf llvmorg-${CLANG_STAGE1_VERSION}.tar.gz llvm-project-llvmorg-${CLANG_STAGE1_VERSION} llvmorg-${CLANG_VERSION}.tar.gz llvm-project-llvmorg-${CLANG_VERSION}
 
-RUN export OPENSSL_VERSION="1.1.1s" && \
+RUN export OPENSSL_VERSION="1.1.1u" && \
     wget --no-check-certificate https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz && \
     tar -xvpf openssl-${OPENSSL_VERSION}.tar.gz && \
     cd openssl-${OPENSSL_VERSION} && \
@@ -138,7 +152,7 @@ RUN export ICU_VERSION="67_1" && \
     cd ../.. && \
     rm -rf icu icu4c-${ICU_VERSION}-src.tgz
 
-RUN export LIBXML2_VERSION="2.10.3" && \
+RUN export LIBXML2_VERSION="2.11.4" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxml2/$(echo ${LIBXML2_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxml2-${LIBXML2_VERSION}.tar.xz && \
     tar -xvpf libxml2-${LIBXML2_VERSION}.tar.xz && \
     cd libxml2-${LIBXML2_VERSION} && \
@@ -155,7 +169,7 @@ RUN export LIBXML2_VERSION="2.10.3" && \
     cd .. && \
     rm -rf libxml2-${LIBXML2_VERSION} libxml2-${LIBXML2_VERSION}.tar.xz
 
-RUN export LIBXSLT_VERSION="1.1.37" && \
+RUN export LIBXSLT_VERSION="1.1.38" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxslt/$(echo ${LIBXSLT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxslt-${LIBXSLT_VERSION}.tar.xz && \
     tar -xvpf libxslt-${LIBXSLT_VERSION}.tar.xz && \
     cd libxslt-${LIBXSLT_VERSION} && \
@@ -209,7 +223,7 @@ RUN export QT_XCB_VERSION="5.14.2" && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     rm -rf qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz qtbase-everywhere-src-${QT_XCB_VERSION}
 
-RUN export QT_VERSION="5.15.8" && \
+RUN export QT_VERSION="5.15.10" && \
     export QT_XKB_COMPOSE_PATCH_VERSION="5.15.6" && \
     export QT_WEBKIT_VERSION="5.212.0-alpha4" && \
     wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v${QT_XKB_COMPOSE_PATCH_VERSION}-lts-lgpl...feature/old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.diff -O qtbase_old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.patch && \
@@ -310,7 +324,7 @@ RUN export QTSTYLEPLUGINS_COMMIT="335dbece103e2cbf6c7cf819ab6672c2956b17b3" && \
     cd ../.. && \
     rm -rf fix-build-qt5.15.patch ${QTSTYLEPLUGINS_COMMIT}.tar.gz qtstyleplugins-${QTSTYLEPLUGINS_COMMIT}
 
-RUN export QT5CT_VERSION="1.5" && \
+RUN export QT5CT_VERSION="1.7" && \
     wget --no-check-certificate https://downloads.sourceforge.net/project/qt5ct/qt5ct-${QT5CT_VERSION}.tar.bz2 && \
     tar -xvpf qt5ct-${QT5CT_VERSION}.tar.bz2 && \
     cd qt5ct-${QT5CT_VERSION} && \
@@ -341,14 +355,17 @@ RUN export APPIMAGEKIT_VERSION="13" && \
     chmod -R 755 /opt/appimagetool && \
     ln -s /opt/appimagetool/AppRun /usr/local/bin/appimagetool )
 
-RUN export LINUXDEPLOYQT_COMMIT="deebf70ea60b7fd19321e7a0eb884d6d986f7b5c" && \
-    wget --no-check-certificate https://github.com/probonopd/linuxdeployqt/archive/${LINUXDEPLOYQT_COMMIT}.tar.gz && \
+# @todo 8428c59318b250058e6cf93353e2871072bbf7f9 break Qt5:
+# CMake Error: AUTOMOC for target linuxdeployqt: Could not find moc executable target Qt5::moc
+RUN export LINUXDEPLOYQT_COMMIT="5adf76fbeb097665d9a28bdc637d7454edc39f85" && \
+    git -c http.sslVerify=false clone https://github.com/probonopd/linuxdeployqt.git linuxdeployqt && \
     wget --no-check-certificate https://gist.githubusercontent.com/AlienCowEatCake/2e462eeb9542df02249a5da2d1d5c10e/raw/36c45c569bc38ce038e470dd9284d9a7b7ee8f26/2023-01-04_linuxdeployqt_qemu.patch && \
-    tar -xvpf ${LINUXDEPLOYQT_COMMIT}.tar.gz && \
-    cd linuxdeployqt-${LINUXDEPLOYQT_COMMIT} && \
+    cd linuxdeployqt && \
+    git checkout -f ${LINUXDEPLOYQT_COMMIT} && \
+    git clean -dfx && \
     patch -p1 -i ../2023-01-04_linuxdeployqt_qemu.patch && \
     cmake -S . -B build \
-        -G "Unix Makefiles" \
+        -G "Ninja" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER="/opt/clang/bin/clang" \
         -DCMAKE_CXX_COMPILER="/opt/clang/bin/clang++" \
@@ -358,13 +375,13 @@ RUN export LINUXDEPLOYQT_COMMIT="deebf70ea60b7fd19321e7a0eb884d6d986f7b5c" && \
         -DCMAKE_SHARED_LINKER_FLAGS=-fuse-ld=lld \
         -DGIT_COMMIT=${LINUXDEPLOYQT_COMMIT} \
         -DGIT_TAG_NAME=${LINUXDEPLOYQT_COMMIT} && \
-    cmake --build build --target all -- -j$(getconf _NPROCESSORS_ONLN) && \
+    cmake --build build --target all && \
     strip --strip-all build/tools/linuxdeployqt/linuxdeployqt && \
     cp -a build/tools/linuxdeployqt/linuxdeployqt /usr/local/bin/ && \
     cd .. && \
-    rm -rf 2023-01-04_linuxdeployqt_qemu.patch ${LINUXDEPLOYQT_COMMIT}.tar.gz linuxdeployqt-${LINUXDEPLOYQT_COMMIT}
+    rm -rf 2023-01-04_linuxdeployqt_qemu.patch linuxdeployqt
 
-RUN export PATCHELF_VERSION="0.17.0" && \
+RUN export PATCHELF_VERSION="0.18.0" && \
     wget --no-check-certificate https://github.com/NixOS/patchelf/releases/download/${PATCHELF_VERSION}/patchelf-${PATCHELF_VERSION}.tar.bz2 && \
     tar -xvpf patchelf-${PATCHELF_VERSION}.tar.bz2 && \
     cd patchelf-${PATCHELF_VERSION} && \
