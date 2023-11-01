@@ -19,7 +19,7 @@ WORKDIR /usr/src
 ENV PATH="/opt/clang/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/clang/lib:/opt/qt5/lib"
 
-RUN export CMAKE_VERSION="3.26.4" && \
+RUN export CMAKE_VERSION="3.27.7" && \
     wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz && \
     tar -xvpf cmake-${CMAKE_VERSION}.tar.gz && \
     cd cmake-${CMAKE_VERSION} && \
@@ -124,7 +124,7 @@ RUN export CLANG_VERSION="15.0.7" && \
     \
     rm -rf llvmorg-${CLANG_STAGE1_VERSION}.tar.gz llvm-project-llvmorg-${CLANG_STAGE1_VERSION} llvmorg-${CLANG_VERSION}.tar.gz llvm-project-llvmorg-${CLANG_VERSION}
 
-RUN export OPENSSL_VERSION="1.1.1u" && \
+RUN export OPENSSL_VERSION="1.1.1w" && \
     wget --no-check-certificate https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz && \
     tar -xvpf openssl-${OPENSSL_VERSION}.tar.gz && \
     cd openssl-${OPENSSL_VERSION} && \
@@ -152,7 +152,7 @@ RUN export ICU_VERSION="67_1" && \
     cd ../.. && \
     rm -rf icu icu4c-${ICU_VERSION}-src.tgz
 
-RUN export LIBXML2_VERSION="2.11.4" && \
+RUN export LIBXML2_VERSION="2.11.5" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxml2/$(echo ${LIBXML2_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxml2-${LIBXML2_VERSION}.tar.xz && \
     tar -xvpf libxml2-${LIBXML2_VERSION}.tar.xz && \
     cd libxml2-${LIBXML2_VERSION} && \
@@ -223,7 +223,7 @@ RUN export QT_XCB_VERSION="5.14.2" && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     rm -rf qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz qtbase-everywhere-src-${QT_XCB_VERSION}
 
-RUN export QT_VERSION="5.15.10" && \
+RUN export QT_VERSION="5.15.11" && \
     export QT_XKB_COMPOSE_PATCH_VERSION="5.15.6" && \
     export QT_WEBKIT_VERSION="5.212.0-alpha4" && \
     wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v${QT_XKB_COMPOSE_PATCH_VERSION}-lts-lgpl...feature/old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.diff -O qtbase_old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.patch && \
@@ -324,7 +324,7 @@ RUN export QTSTYLEPLUGINS_COMMIT="335dbece103e2cbf6c7cf819ab6672c2956b17b3" && \
     cd ../.. && \
     rm -rf fix-build-qt5.15.patch ${QTSTYLEPLUGINS_COMMIT}.tar.gz qtstyleplugins-${QTSTYLEPLUGINS_COMMIT}
 
-RUN export QT5CT_VERSION="1.7" && \
+RUN export QT5CT_VERSION="1.8" && \
     wget --no-check-certificate https://downloads.sourceforge.net/project/qt5ct/qt5ct-${QT5CT_VERSION}.tar.bz2 && \
     tar -xvpf qt5ct-${QT5CT_VERSION}.tar.bz2 && \
     cd qt5ct-${QT5CT_VERSION} && \
