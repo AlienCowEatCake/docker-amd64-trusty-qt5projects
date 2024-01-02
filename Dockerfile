@@ -18,8 +18,9 @@ WORKDIR /usr/src
 
 ENV PATH="/opt/clang/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/clang/lib:/opt/qt5/lib"
+ENV LANG="C.UTF-8"
 
-RUN export CMAKE_VERSION="3.27.7" && \
+RUN export CMAKE_VERSION="3.28.1" && \
     wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz && \
     tar -xvpf cmake-${CMAKE_VERSION}.tar.gz && \
     cd cmake-${CMAKE_VERSION} && \
@@ -88,6 +89,7 @@ RUN export CLANG_VERSION="15.0.7" && \
     wget --no-check-certificate https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${CLANG_VERSION}.tar.gz && \
     tar -xvpf llvmorg-${CLANG_VERSION}.tar.gz && \
     cd llvm-project-llvmorg-${CLANG_VERSION} && \
+    sed -i 's|\(virtual unsigned GetDefaultDwarfVersion() const { return \)5;|\14;|' clang/include/clang/Driver/ToolChain.h && \
     cmake -S llvm -B build \
         -G "Ninja" \
         -DCMAKE_BUILD_TYPE=Release \
@@ -152,7 +154,7 @@ RUN export ICU_VERSION="67_1" && \
     cd ../.. && \
     rm -rf icu icu4c-${ICU_VERSION}-src.tgz
 
-RUN export LIBXML2_VERSION="2.11.5" && \
+RUN export LIBXML2_VERSION="2.12.3" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxml2/$(echo ${LIBXML2_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxml2-${LIBXML2_VERSION}.tar.xz && \
     tar -xvpf libxml2-${LIBXML2_VERSION}.tar.xz && \
     cd libxml2-${LIBXML2_VERSION} && \
@@ -169,7 +171,7 @@ RUN export LIBXML2_VERSION="2.11.5" && \
     cd .. && \
     rm -rf libxml2-${LIBXML2_VERSION} libxml2-${LIBXML2_VERSION}.tar.xz
 
-RUN export LIBXSLT_VERSION="1.1.38" && \
+RUN export LIBXSLT_VERSION="1.1.39" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxslt/$(echo ${LIBXSLT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxslt-${LIBXSLT_VERSION}.tar.xz && \
     tar -xvpf libxslt-${LIBXSLT_VERSION}.tar.xz && \
     cd libxslt-${LIBXSLT_VERSION} && \
@@ -187,9 +189,9 @@ RUN export LIBXSLT_VERSION="1.1.38" && \
     rm -rf libxslt-${LIBXSLT_VERSION}.tar.xz libxslt-${LIBXSLT_VERSION}
 
 RUN export QT_XCB_VERSION="5.14.2" && \
-    wget --no-check-certificate https://download.qt.io/archive/qt/$(echo ${QT_XCB_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_XCB_VERSION}/submodules/qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz && \
-    tar -xvpf qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz && \
-    cd qtbase-everywhere-src-${QT_XCB_VERSION}/src/3rdparty/xcb && \
+    wget --no-check-certificate https://github.com/qt/qtbase/archive/refs/tags/v${QT_XCB_VERSION}.tar.gz && \
+    tar -xvpf v${QT_XCB_VERSION}.tar.gz && \
+    cd qtbase-${QT_XCB_VERSION}/src/3rdparty/xcb && \
     mkdir -p /opt/xcb/lib && \
     cp -a include /opt/xcb/ && \
     cp -a sysinclude/* /opt/xcb/include/ && \
@@ -221,13 +223,16 @@ RUN export QT_XCB_VERSION="5.14.2" && \
     echo '}' >> /opt/xcb/include/xcb/xkb.h && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
-    rm -rf qtbase-everywhere-src-${QT_XCB_VERSION}.tar.xz qtbase-everywhere-src-${QT_XCB_VERSION}
+    rm -rf v${QT_XCB_VERSION}.tar.gz qtbase-${QT_XCB_VERSION}
 
-RUN export QT_VERSION="5.15.11" && \
+RUN export QT_VERSION="5.15.12" && \
     export QT_XKB_COMPOSE_PATCH_VERSION="5.15.6" && \
     export QT_WEBKIT_VERSION="5.212.0-alpha4" && \
     wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v${QT_XKB_COMPOSE_PATCH_VERSION}-lts-lgpl...feature/old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.diff -O qtbase_old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.patch && \
-    wget --no-check-certificate https://download.qt.io/archive/qt/$(echo ${QT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
+    wget --no-check-certificate --tries=1 https://download.qt.io/archive/qt/$(echo ${QT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz || \
+    wget --no-check-certificate --tries=1 https://qt-mirror.dannhauer.de/archive/qt/$(echo ${QT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz || \
+    wget --no-check-certificate --tries=1 https://mirror.accum.se/mirror/qt.io/qtproject/archive/qt/$(echo ${QT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz || \
+    wget --no-check-certificate --tries=1 https://www.nic.funet.fi/pub/mirrors/download.qt-project.org/archive/qt/$(echo ${QT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     wget --no-check-certificate https://github.com/qtwebkit/qtwebkit/releases/download/qtwebkit-${QT_WEBKIT_VERSION}/qtwebkit-${QT_WEBKIT_VERSION}.tar.xz && \
     tar -xvpf qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     cd qt-everywhere-src-${QT_VERSION}/qtbase && \
@@ -283,6 +288,8 @@ RUN export QT_VERSION="5.15.11" && \
     cd qtwebkit-${QT_WEBKIT_VERSION} && \
     echo 'set(ICU_LIBRARIES "/opt/icu/lib/libicui18n.a;/opt/icu/lib/libicuuc.a;/opt/icu/lib/libicudata.a")' >> Source/cmake/FindICU.cmake && \
     echo 'set(ICU_I18N_LIBRARIES "/opt/icu/lib/libicui18n.a;/opt/icu/lib/libicuuc.a;/opt/icu/lib/libicudata.a")' >> Source/cmake/FindICU.cmake && \
+    sed -i 's|\(parseErrorFunc(void\* userData,\) \(xmlError\)|\1 const \2|' Source/WebCore/xml/XSLTProcessor.h && \
+    sed -i 's|\(parseErrorFunc(void\* userData,\) \(xmlError\)|\1 const \2|' Source/WebCore/xml/XSLTProcessorLibxslt.cpp && \
     mkdir build && \
     cd build && \
     SQLITE3SRCDIR=${PWD}/../../qtbase/src/3rdparty/sqlite \
@@ -355,14 +362,13 @@ RUN export APPIMAGEKIT_VERSION="13" && \
     chmod -R 755 /opt/appimagetool && \
     ln -s /opt/appimagetool/AppRun /usr/local/bin/appimagetool )
 
-# @todo 8428c59318b250058e6cf93353e2871072bbf7f9 break Qt5:
-# CMake Error: AUTOMOC for target linuxdeployqt: Could not find moc executable target Qt5::moc
-RUN export LINUXDEPLOYQT_COMMIT="5adf76fbeb097665d9a28bdc637d7454edc39f85" && \
+RUN export LINUXDEPLOYQT_COMMIT="2b38449ca9e9c68ad53e28531c017910ead6ebc4" && \
     git -c http.sslVerify=false clone https://github.com/probonopd/linuxdeployqt.git linuxdeployqt && \
     wget --no-check-certificate https://gist.githubusercontent.com/AlienCowEatCake/2e462eeb9542df02249a5da2d1d5c10e/raw/36c45c569bc38ce038e470dd9284d9a7b7ee8f26/2023-01-04_linuxdeployqt_qemu.patch && \
     cd linuxdeployqt && \
     git checkout -f ${LINUXDEPLOYQT_COMMIT} && \
     git clean -dfx && \
+    sed -i 's|^\(find_package(QT NAMES.*\)$|\1\nfind_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)|' tools/linuxdeployqt/CMakeLists.txt && \
     patch -p1 -i ../2023-01-04_linuxdeployqt_qemu.patch && \
     cmake -S . -B build \
         -G "Ninja" \
