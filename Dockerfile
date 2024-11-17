@@ -180,7 +180,7 @@ RUN export ICU_VERSION="67_1" && \
     cd ../.. && \
     rm -rf icu icu4c-${ICU_VERSION}-src.tgz
 
-RUN export LIBXML2_VERSION="2.13.4" && \
+RUN export LIBXML2_VERSION="2.13.5" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxml2/$(echo ${LIBXML2_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxml2-${LIBXML2_VERSION}.tar.xz && \
     tar -xvpf libxml2-${LIBXML2_VERSION}.tar.xz && \
     cd libxml2-${LIBXML2_VERSION} && \
@@ -257,7 +257,7 @@ RUN export QT_XCB_VERSION="5.14.2" && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     rm -rf v${QT_XCB_VERSION}.tar.gz qtbase-${QT_XCB_VERSION}
 
-RUN export QT_VERSION="5.15.15" && \
+RUN export QT_VERSION="5.15.16" && \
     export QT_XKB_COMPOSE_PATCH_VERSION="5.15.6" && \
     export QT_WEBKIT_VERSION="5.212.0-alpha4" && \
     wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v${QT_XKB_COMPOSE_PATCH_VERSION}-lts-lgpl...feature/old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.diff -O qtbase_old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.patch && \
