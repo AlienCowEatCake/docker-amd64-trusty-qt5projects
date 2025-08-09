@@ -180,7 +180,7 @@ RUN export ICU_VERSION="67_1" && \
     cd ../.. && \
     rm -rf icu icu4c-${ICU_VERSION}-src.tgz
 
-RUN export LIBXML2_VERSION="2.13.5" && \
+RUN export LIBXML2_VERSION="2.14.5" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxml2/$(echo ${LIBXML2_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxml2-${LIBXML2_VERSION}.tar.xz && \
     tar -xvpf libxml2-${LIBXML2_VERSION}.tar.xz && \
     cd libxml2-${LIBXML2_VERSION} && \
@@ -200,7 +200,7 @@ RUN export LIBXML2_VERSION="2.13.5" && \
     cd .. && \
     rm -rf libxml2-${LIBXML2_VERSION} libxml2-${LIBXML2_VERSION}.tar.xz
 
-RUN export LIBXSLT_VERSION="1.1.42" && \
+RUN export LIBXSLT_VERSION="1.1.43" && \
     wget --no-check-certificate https://download.gnome.org/sources/libxslt/$(echo ${LIBXSLT_VERSION} | sed 's|\([0-9]*\.[0-9]*\)\..*|\1|')/libxslt-${LIBXSLT_VERSION}.tar.xz && \
     tar -xvpf libxslt-${LIBXSLT_VERSION}.tar.xz && \
     cd libxslt-${LIBXSLT_VERSION} && \
@@ -257,7 +257,7 @@ RUN export QT_XCB_VERSION="5.14.2" && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     rm -rf v${QT_XCB_VERSION}.tar.gz qtbase-${QT_XCB_VERSION}
 
-RUN export QT_VERSION="5.15.16" && \
+RUN export QT_VERSION="5.15.17" && \
     export QT_XKB_COMPOSE_PATCH_VERSION="5.15.6" && \
     export QT_WEBKIT_VERSION="5.212.0-alpha4" && \
     wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v${QT_XKB_COMPOSE_PATCH_VERSION}-lts-lgpl...feature/old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.diff -O qtbase_old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.patch && \
@@ -376,7 +376,22 @@ RUN export QTSTYLEPLUGINS_COMMIT="335dbece103e2cbf6c7cf819ab6672c2956b17b3" && \
     cd ../.. && \
     rm -rf fix-build-qt5.15.patch ${QTSTYLEPLUGINS_COMMIT}.tar.gz qtstyleplugins-${QTSTYLEPLUGINS_COMMIT}
 
-RUN export QT5CT_VERSION="1.8" && \
+RUN export QT5GTK2_COMMIT="5a5be3cc3251f240e7879680f91226405685cea7" && \
+    wget --no-check-certificate https://www.opencode.net/trialuser/qt5gtk2/-/archive/${QT5GTK2_COMMIT}/qt5gtk2-${QT5GTK2_COMMIT}.tar.gz && \
+    tar -xvpf qt5gtk2-${QT5GTK2_COMMIT}.tar.gz && \
+    cd qt5gtk2-${QT5GTK2_COMMIT} && \
+    mkdir build && \
+    cd build && \
+    setarch "$(gcc -dumpmachine | sed 's|-.*|| ; s|^arm$|linux32| ; s|^aarch64$|linux64| ; s|^powerpc64le$|linux64|')" \
+        /opt/qt5/bin/qmake -r ../qt5gtk2.pro && \
+    setarch "$(gcc -dumpmachine | sed 's|-.*|| ; s|^arm$|linux32| ; s|^aarch64$|linux64| ; s|^powerpc64le$|linux64|')" \
+        make -j$(getconf _NPROCESSORS_ONLN) && \
+    setarch "$(gcc -dumpmachine | sed 's|-.*|| ; s|^arm$|linux32| ; s|^aarch64$|linux64| ; s|^powerpc64le$|linux64|')" \
+        make install && \
+    cd ../.. && \
+    rm -rf qt5gtk2-${QT5GTK2_COMMIT}.tar.gz qt5gtk2-${QT5GTK2_COMMIT}
+
+RUN export QT5CT_VERSION="1.9" && \
     wget --no-check-certificate https://downloads.sourceforge.net/project/qt5ct/qt5ct-${QT5CT_VERSION}.tar.bz2 && \
     tar -xvpf qt5ct-${QT5CT_VERSION}.tar.bz2 && \
     cd qt5ct-${QT5CT_VERSION} && \
@@ -391,27 +406,27 @@ RUN export QT5CT_VERSION="1.8" && \
     cd ../.. && \
     rm -rf qt5ct-${QT5CT_VERSION}.tar.bz2 qt5ct-${QT5CT_VERSION}
 
-# @todo Build AppImageKit from source?
-RUN export APPIMAGEKIT_VERSION="13" && \
-    export P7ZIP_VERSION="16.02" && \
+# @todo Build appimagetool and type2-runtime from source?
+RUN export APPIMAGETOOL_VERSION="continuous" && \
+    export TYPE2_RUNTIME_VERSION="continuous" && \
+    export IP7ZIP_VERSION="2501" && \
     echo "|i686|x86_64|arm|aarch64|" | grep -v "|$(gcc -dumpmachine | sed 's|-.*||')|" >/dev/null || ( \
-    wget --no-check-certificate https://sourceforge.net/projects/p7zip/files/p7zip/${P7ZIP_VERSION}/p7zip_${P7ZIP_VERSION}_src_all.tar.bz2/download -O p7zip_${P7ZIP_VERSION}_src_all.tar.bz2 && \
-    tar -xvpf p7zip_${P7ZIP_VERSION}_src_all.tar.bz2 && \
-    cd p7zip_${P7ZIP_VERSION} && \
-    setarch "$(gcc -dumpmachine | sed 's|-.*|| ; s|^arm$|linux32| ; s|^aarch64$|linux64| ; s|^powerpc64le$|linux64|')" \
-        make -j$(getconf _NPROCESSORS_ONLN) 7z && \
-    cd .. && \
-    wget --no-check-certificate https://github.com/AppImage/AppImageKit/releases/download/${APPIMAGEKIT_VERSION}/appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage -O appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage && \
+    wget --no-check-certificate https://7-zip.org/a/7z${IP7ZIP_VERSION}-linux-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^i686$|x86| ; s|^x86_64$|x64| ; s|^aarch64$|arm64|').tar.xz -O 7z${IP7ZIP_VERSION}-linux.tar.xz && \
+    mkdir -p 7z${IP7ZIP_VERSION}-linux && \
+    tar -xvpf 7z${IP7ZIP_VERSION}-linux.tar.xz --directory=7z${IP7ZIP_VERSION}-linux && \
+    wget --no-check-certificate https://github.com/AppImage/appimagetool/releases/download/${APPIMAGETOOL_VERSION}/appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage -O appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage && \
     mkdir squashfs-root && \
     cd squashfs-root && \
-    ../p7zip_${P7ZIP_VERSION}/bin/7z x ../appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage && \
+    ../7z${IP7ZIP_VERSION}-linux/7zzs x ../appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage && \
     cd .. && \
-    rm -rf appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage p7zip_${P7ZIP_VERSION}_src_all.tar.bz2 p7zip_${P7ZIP_VERSION} && \
+    rm -rf appimagetool-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|').AppImage 7z${IP7ZIP_VERSION}-linux.tar.xz 7z${IP7ZIP_VERSION}-linux && \
     mv squashfs-root /opt/appimagetool && \
     chmod -R 755 /opt/appimagetool && \
-    ln -s /opt/appimagetool/AppRun /usr/local/bin/appimagetool )
+    wget --no-check-certificate https://github.com/AppImage/type2-runtime/releases/download/${TYPE2_RUNTIME_VERSION}/runtime-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|') -O /opt/runtime-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|') && \
+    echo "#!/bin/sh -e\n/opt/appimagetool/AppRun --runtime-file /opt/runtime-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|') \"\${@}\"" > /usr/local/bin/appimagetool && \
+    chmod 755 /opt/runtime-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^arm$|armhf|') /usr/local/bin/appimagetool )
 
-RUN export LINUXDEPLOYQT_COMMIT="b00a83d99abecf3ab70fbff6d5aad48ec3791be2" && \
+RUN export LINUXDEPLOYQT_COMMIT="0393b8487bdb552738bc8f89114959f025ef68c3" && \
     git -c http.sslVerify=false clone https://github.com/probonopd/linuxdeployqt.git linuxdeployqt && \
     cd linuxdeployqt && \
     git checkout -f ${LINUXDEPLOYQT_COMMIT} && \
