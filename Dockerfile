@@ -21,7 +21,7 @@ ENV PATH="/opt/clang/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/clang/lib:/opt/qt5/lib"
 ENV LANG="C.UTF-8"
 
-RUN export CMAKE_VERSION="3.31.10" && \
+RUN export CMAKE_VERSION="3.31.12" && \
     wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz && \
     tar -xvpf cmake-${CMAKE_VERSION}.tar.gz && \
     cd cmake-${CMAKE_VERSION} && \
@@ -180,8 +180,8 @@ RUN export ICU_VERSION="67_1" && \
     cd ../.. && \
     rm -rf icu icu4c-${ICU_VERSION}-src.tgz
 
-RUN export LIBXML2_VERSION="2.15.1" && \
-    wget --no-check-certificate https://snapshot.debian.org/archive/debian/20251022T024409Z/pool/main/libx/libxml2/libxml2_${LIBXML2_VERSION}%2Bdfsg.orig.tar.xz -O libxml2-${LIBXML2_VERSION}.tar.xz && \
+RUN export LIBXML2_VERSION="2.15.2" && \
+    wget --no-check-certificate https://snapshot.debian.org/archive/debian/20260325T143243Z/pool/main/libx/libxml2/libxml2_${LIBXML2_VERSION}%2Bdfsg.orig.tar.xz -O libxml2-${LIBXML2_VERSION}.tar.xz && \
     tar -xvpf libxml2-${LIBXML2_VERSION}.tar.xz && \
     cd libxml2-${LIBXML2_VERSION} && \
     PKG_CONFIG_PATH="/opt/icu/lib/pkgconfig" \
@@ -200,8 +200,8 @@ RUN export LIBXML2_VERSION="2.15.1" && \
     cd .. && \
     rm -rf libxml2-${LIBXML2_VERSION} libxml2-${LIBXML2_VERSION}.tar.xz
 
-RUN export LIBXSLT_VERSION="1.1.43" && \
-    wget --no-check-certificate https://snapshot.debian.org/archive/debian/20250520T082932Z/pool/main/libx/libxslt/libxslt_${LIBXSLT_VERSION}.orig.tar.xz -O libxslt-${LIBXSLT_VERSION}.tar.xz && \
+RUN export LIBXSLT_VERSION="1.1.45" && \
+    wget --no-check-certificate https://snapshot.debian.org/archive/debian/20260325T203311Z/pool/main/libx/libxslt/libxslt_${LIBXSLT_VERSION}.orig.tar.xz -O libxslt-${LIBXSLT_VERSION}.tar.xz && \
     tar -xvpf libxslt-${LIBXSLT_VERSION}.tar.xz && \
     cd libxslt-${LIBXSLT_VERSION} && \
     PKG_CONFIG_PATH="/opt/icu/lib/pkgconfig:/opt/libxml2/lib/pkgconfig" \
@@ -257,7 +257,7 @@ RUN export QT_XCB_VERSION="5.14.2" && \
     echo '#endif' >> /opt/xcb/include/xcb/xkb.h && \
     rm -rf v${QT_XCB_VERSION}.tar.gz qtbase-${QT_XCB_VERSION}
 
-RUN export QT_VERSION="5.15.18" && \
+RUN export QT_VERSION="5.15.19" && \
     export QT_XKB_COMPOSE_PATCH_VERSION="5.15.6" && \
     export QT_WEBKIT_VERSION="5.212.0-alpha4" && \
     wget --no-check-certificate https://github.com/AlienCowEatCake/qtbase/compare/v${QT_XKB_COMPOSE_PATCH_VERSION}-lts-lgpl...feature/old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.diff -O qtbase_old-compose-input-context_v${QT_XKB_COMPOSE_PATCH_VERSION}.patch && \
@@ -377,7 +377,7 @@ RUN export QTSTYLEPLUGINS_COMMIT="335dbece103e2cbf6c7cf819ab6672c2956b17b3" && \
     rm -rf fix-build-qt5.15.patch ${QTSTYLEPLUGINS_COMMIT}.tar.gz qtstyleplugins-${QTSTYLEPLUGINS_COMMIT}
 
 RUN export QT5GTK2_COMMIT="5a5be3cc3251f240e7879680f91226405685cea7" && \
-    wget --continue --tries=20 --read-timeout=30 --no-check-certificate https://www.opencode.net/trialuser/qt5gtk2/-/archive/${QT5GTK2_COMMIT}/qt5gtk2-${QT5GTK2_COMMIT}.tar.gz && \
+    wget --no-check-certificate -O qt5gtk2-${QT5GTK2_COMMIT}.tar.gz https://github.com/AlienCowEatCake/qt5gtk2/archive/${QT5GTK2_COMMIT}.tar.gz && \
     tar -xvpf qt5gtk2-${QT5GTK2_COMMIT}.tar.gz && \
     cd qt5gtk2-${QT5GTK2_COMMIT} && \
     mkdir build && \
@@ -409,7 +409,7 @@ RUN export QT5CT_VERSION="1.9" && \
 # @todo Build appimagetool and type2-runtime from source?
 RUN export APPIMAGETOOL_VERSION="continuous" && \
     export TYPE2_RUNTIME_VERSION="continuous" && \
-    export IP7ZIP_VERSION="2501" && \
+    export IP7ZIP_VERSION="2601" && \
     echo "|i686|x86_64|arm|aarch64|" | grep -v "|$(gcc -dumpmachine | sed 's|-.*||')|" >/dev/null || ( \
     wget --no-check-certificate https://7-zip.org/a/7z${IP7ZIP_VERSION}-linux-$(gcc -dumpmachine | sed 's|-.*||' | sed 's|^i686$|x86| ; s|^x86_64$|x64| ; s|^aarch64$|arm64|').tar.xz -O 7z${IP7ZIP_VERSION}-linux.tar.xz && \
     mkdir -p 7z${IP7ZIP_VERSION}-linux && \
